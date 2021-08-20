@@ -12,7 +12,7 @@ const con = mysql.createConnection({
     host:process.env.DB_HOST,
     user:process.env.DB_USER,
     password:process.env.DB_PASSWORD,
-    database: DB_NAME
+    database: process.env.DB_NAME
 });
 
 con.connect(function(err){
@@ -68,6 +68,25 @@ con.connect(function(err){
         //         console.log("multiple records inserted into the table :",result.affectedRows);
         //     }
         // });
+
+        // different ways to SELECT  from the table
+        //const sql = "SELECT * FROM paintings";
+        //const sql = "SELECT name,price FROM paintings";
+        
+        //escape the query from user , use mysql.escape()
+        const des = "watercolor";
+        const prc = "777";
+        const sql = "SELECT * FROM paintings WHERE description = ? AND price = ?";
+        
+        // select all result with price starts with 7 like 777 or 766 or 7xxxx
+        //const sql = "SELECT * FROM paintings WHERE price LIKE '7%'" 
+        con.query(sql,[des,prc], function(err, result,fields){
+            if(err) 
+                console.log(err);
+            else 
+                //console.log(fields); the fields object is an array containing information about each field as an object
+                console.log(result);
+        })
     }
 })
 
