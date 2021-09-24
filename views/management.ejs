@@ -1,0 +1,28 @@
+<%- include("partials/header");-%>
+    <h1>management page</h1>
+    <main class="form-adding">    
+        <form action="/upload" method="POST" enctype="multipart/form-data">
+            
+            <input class ="mb-2" type="file"
+            name="paintingImage"
+            accept="image/png, image/jpeg">        
+
+            <div class="form-floating">
+                <input type="text" class="form-control mb-1" name="name" placeholder="name">
+                <label for="floatingInput">Name</label>
+            </div>
+        
+            <div class="form-floating">
+                <input type="text" class="form-control mb-1" name="description" placeholder="description">
+                <label for="floatingInput">Description</label>
+            </div>
+
+            <div class="form-floating">
+                <input type="text" class="form-control mb-2" name="price" placeholder="price">
+                <label for="floatingInput">Price</label>
+            </div>                   
+            
+            <button class="btn btn-primary" type="submit">submit</button>
+        </form>
+    </main>
+<%- include("partials/footer");-%> 

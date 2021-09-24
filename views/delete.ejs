@@ -1,0 +1,23 @@
+<%- include("partials/header");-%>
+
+<div class="itemcards">
+    <div class="row">
+  
+    <% paintings.forEach(function(painting){  %>     
+    <form action="/delete" method="POST">
+        <div class="delete-form mt-2">
+            <img class="img-delete" src= <%=painting.imgsrc %> class="card-img-top" alt="paint picture">
+            <ul>
+                <li><%= painting.name %></li>
+                <li><%= painting.description %></li>
+                <li><%= painting.price %></li>
+                <li>delete <input type="checkbox" name ="checkbox" value ="<%= painting.id%>" onChange="this.form.submit()"></li>
+            </ul> 
+        </div>                
+                                   
+    </form>           
+    <% }) %>    
+    </div>        
+  </div>
+
+<%- include("partials/footer");-%> 
