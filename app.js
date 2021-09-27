@@ -21,7 +21,8 @@ const storage = multer.diskStorage({
     filename:function(req,file,cb){
         //descructure from the file to get the oirginal file name
         const {originalname} = file;
-        cb(null,originalname);
+        //replace(/\s/g, ""); for taking the space out from the filename
+        cb(null,originalname.replace(/\s/g, ""));
     }
 })
 
@@ -84,16 +85,18 @@ app.get("/shoppingcart",function(req,res){
 app.post('/upload', upload.single('paintingImage'), function (req, res) {
     // req.file is the name of your file in the form above, here 'uploaded_file'
     // req.body will hold the text fields, if there were any 
-    console.log("file" + req.file.originalname +"uploaded");
+    console.log("file" + req.file.originalname.replace(/\s/g, "") +" uploaded");
     //console.log(req.file, req.body.name)
     
     //INSERT 1 record
     const addone_sql = "INSERT INTO paintings (name,description,price,imgsrc) VALUES (?,?,?,?);";
     
-    let newPaintName = req.body.name;
+    let newPaintName = req.body.name
     let newDescription = req.body.description;
     let newPrice = req.body.Price;
-    let newImageSrc = "/images/arts/"+ req.file.originalname;
+    let newImageSrc = "/images/arts/"+ req.file.originalname.replace(/\s/g, "");
+
+    //console.log(newImageSrc);
 
     //console.log(addone_sql);
     //const sql = "INSERT INTO paintings (name,description,price,imgsrc) VALUES('paint4','watercolor',999,'/images/arts/p4.jpg')";
