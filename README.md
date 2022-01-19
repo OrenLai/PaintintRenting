@@ -1,5 +1,5 @@
 # PaintintRenting
-a painting renting website use Bootstrap5 and MySQL
+a full-stack website use Bootstrap5, MySQL, EJS, SCSS
 
 work in progress still 
 
