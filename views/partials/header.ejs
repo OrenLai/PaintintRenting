@@ -26,12 +26,16 @@
                     <li class="nav-item">
                       <a class="nav-link" href="/login">Login</a>
                     </li>
-                    <li class="nav-item">
-                      <a class="nav-link" href="/management">management</a>
-                    </li>
-                    <li class="nav-item">
-                      <a class="nav-link" href="/delete">delete</a>
-                    </li>
+                    <!-- only show management and delete page if the user is admin -->
+                    <% if (true){ %> 
+                      <li class="nav-item">
+                        <a class="nav-link" href="/add">Add</a>
+                      </li>
+                      <li class="nav-item">
+                        <a class="nav-link" href="/delete">delete</a>
+                      </li>
+                    <% } %>
+                  
                     <li class="nav-item">
                       <a class="nav-link" href="/shoppingcart">Shopping cart</a>
                     </li>
