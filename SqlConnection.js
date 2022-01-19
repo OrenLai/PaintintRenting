@@ -2,15 +2,17 @@ require("dotenv").config();
 
 const mysql = require("mysql2");
 
-const con = mysql.createConnection({
+const connection = mysql.createConnection({
     host:process.env.DB_HOST,
     user:process.env.DB_USER,
     password:process.env.DB_PASSWORD,
-
     database: process.env.DB_NAME
 });
 
-con.connect(function(err){
+// for using passport with MySQL
+//connection.query('USE vidyawxx_build2');	
+
+connection.connect(function(err){
     if (err){
         console.log(err);
     }else{
@@ -88,4 +90,4 @@ con.connect(function(err){
     }
 });
 
-module.exports = con;
+module.exports = connection;

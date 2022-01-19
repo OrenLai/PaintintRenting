@@ -1,18 +1,24 @@
 
 
 const express = require("express");
-const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const _ = require("lodash");
 const { result } = require("lodash");
-const passport = require("passport-local");
 const multer = require("multer");
 const uuid = require("uuid");
+const passport = require("passport");
+const session = require("express-session");
+const LocalStrategy  = require('passport-local').Strategy;
+const bcrypt = require("bcrypt");
 
 const database = require("./SqlConnection");
 
+
+
 const app = express();
-app.use(bodyParser.urlencoded({extended: true}));
+//allow us to access the req.body.username/password...etc
+app.use(express.urlencoded({extended: false}));
+
 
 const storage = multer.diskStorage({
     destination:function(req,file,cb){
@@ -31,8 +37,36 @@ const storage = multer.diskStorage({
 const upload = multer({storage});
 
 app.set("view engine","ejs");
-
 app.use(express.static("public"));
+
+// for session and authentication with MySQL
+app.use(session({
+    secret:process.env.SECRET,
+    resave:false,
+    saveUninitialized: false
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+// passport session setup ==================================================
+// =========================================================================
+// required for persistent login sessions
+// passport needs ability to serialize and unserialize users out of session
+
+// used to serialize the user for the session
+passport.serializeUser(function(user, done) {
+	done(null, user.id);
+});
+
+// used to deserialize the user
+passport.deserializeUser(function(id, done) {
+	database.query("SELECT * from users where id = "+id,function(err,rows){	
+		done(err, rows[0]);
+	});
+});
+
+//Routes
 
 app.get("/",function(req,res){
     database.query("SELECT * FROM paintings",function(err,result){
@@ -42,6 +76,8 @@ app.get("/",function(req,res){
         //console.log(result);
         res.render("home",{
             paintings:result
+            // loggedIn : true,
+            // userid:0
         });
     }         
     })
@@ -51,14 +87,35 @@ app.get("/login",function(req,res){
     res.render("login");
 });
 
-app.get("/management",function(req,res){
+app.post("/login",
+  passport.authenticate("local"),
+  function(req,res){
+    // If this function gets called, authentication was successful.
+    // `req.user` contains the authenticated user.
+    res.redirect("/");
+});
+
+app.get("/register",(req,res)=>{
+    res.render("register");
+});
+
+app.post("/register",async (req,res)=>{
+    try {
+        const hashedPassword = await bcrypt.hash(req.body.password,10);
+        database.query("INSERT INTO ")
+    } catch {
+
+    }
+})
+
+app.get("/add",function(req,res){
 
     database.query("SELECT * FROM paintings",function(err,result){
         if(err) 
             console.log(err);
         else{
             //console.log(result);
-            res.render("management",{
+            res.render("add",{
                 paintings:result
             });
         }         
@@ -83,9 +140,11 @@ app.get("/shoppingcart",function(req,res){
 });
 
 app.post('/upload', upload.single('paintingImage'), function (req, res) {
+    
     // req.file is the name of your file in the form above, here 'uploaded_file'
     // req.body will hold the text fields, if there were any 
     console.log("file" + req.file.originalname.replace(/\s/g, "") +" uploaded");
+    
     //console.log(req.file, req.body.name)
     
     //INSERT 1 record
@@ -127,6 +186,8 @@ app.post('/delete',function(req,res){
 
     res.redirect("/delete");
 });
+
+
 
 app.listen(3000,function(){
     console.log("server is up and running at port 3000");
