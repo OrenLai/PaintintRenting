@@ -1,24 +1,16 @@
-
-
 const express = require("express");
 const ejs = require("ejs");
 const _ = require("lodash");
-const { result } = require("lodash");
+const { result, values } = require("lodash");
 const multer = require("multer");
 const uuid = require("uuid");
-const passport = require("passport");
-const session = require("express-session");
-const LocalStrategy  = require('passport-local').Strategy;
 const bcrypt = require("bcrypt");
-
 const database = require("./SqlConnection");
-
-
+const { query } = require("./SqlConnection");
 
 const app = express();
 //allow us to access the req.body.username/password...etc
 app.use(express.urlencoded({extended: false}));
-
 
 const storage = multer.diskStorage({
     destination:function(req,file,cb){
@@ -39,33 +31,6 @@ const upload = multer({storage});
 app.set("view engine","ejs");
 app.use(express.static("public"));
 
-// for session and authentication with MySQL
-app.use(session({
-    secret:process.env.SECRET,
-    resave:false,
-    saveUninitialized: false
-}));
-
-app.use(passport.initialize());
-app.use(passport.session());
-
-// passport session setup ==================================================
-// =========================================================================
-// required for persistent login sessions
-// passport needs ability to serialize and unserialize users out of session
-
-// used to serialize the user for the session
-passport.serializeUser(function(user, done) {
-	done(null, user.id);
-});
-
-// used to deserialize the user
-passport.deserializeUser(function(id, done) {
-	database.query("SELECT * from users where id = "+id,function(err,rows){	
-		done(err, rows[0]);
-	});
-});
-
 //Routes
 
 app.get("/",function(req,res){
@@ -83,15 +48,11 @@ app.get("/",function(req,res){
     })
 });
 
-app.get("/login",function(req,res){
+app.get("/login",(req,res)=>{
     res.render("login");
 });
 
-app.post("/login",
-  passport.authenticate("local"),
-  function(req,res){
-    // If this function gets called, authentication was successful.
-    // `req.user` contains the authenticated user.
+app.post("/login",(req,res)=>{
     res.redirect("/");
 });
 
@@ -99,13 +60,24 @@ app.get("/register",(req,res)=>{
     res.render("register");
 });
 
-app.post("/register",async (req,res)=>{
-    try {
-        const hashedPassword = await bcrypt.hash(req.body.password,10);
-        database.query("INSERT INTO ")
-    } catch {
+app.post("/register",(req,res)=>{
+        
+    const username = req.body.username;
+    const email = req.body.email;
+    const pwd = req.body.password;
+    let hashedPassword = bcrypt.hash(pwd,10);
+    
+    // console.log("password=" + pwd + ", username = " + username + ", email = "+ email);
 
-    }
+    const query="INSERT INTO customers (name,email,password) VALUES(username,email,hashedPassword)"    
+    
+    database.query(query,function(err,result){
+             if(err){
+                 console.log(err);
+             }else{
+                 console.log("multiple records inserted into the table :",result.affectedRows);
+             }
+        });    
 })
 
 app.get("/add",function(req,res){

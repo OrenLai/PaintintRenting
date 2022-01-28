@@ -25,7 +25,7 @@ connection.connect(function(err){
         
 
         //create TABLE names paintings
-        // const sql1 = "CREATE TABLE paintings(id INT AUTO_INCREMENT PRIMARY KEY,name VARCHAR(255) ,description VARCHAR(255) , price INT)";
+         const sql1 = "CREATE TABLE users(id INT AUTO_INCREMENT PRIMARY KEY,email VARCHAR(255) ,password VARCHAR(255) , price INT)";
         // con.query(sql1,function(err,result){
         //     if(err){
         //         console.log(err);

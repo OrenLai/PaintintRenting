@@ -6,7 +6,7 @@
     <% paintings.forEach(function(painting){  %>     
     <form action="/delete" method="POST">
         <div class="delete-form mt-2">
-            <img class="img-delete" src= <%=painting.imgsrc %> class="card-img-top" alt="paint picture">
+            <img class="image-delete" src= <%=painting.imgsrc %> class="card-img-top" alt="paint picture">
             <ul>
                 <li><%= painting.name %></li>
                 <li><%= painting.description %></li>
