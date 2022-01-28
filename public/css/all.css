@@ -57,20 +57,12 @@ a {
   color: #fff;
 }
 
-.form-adding {
-  width: 100%;
-  max-width: 330px;
-  padding: 15px;
-  margin: auto;
+h1 {
+  color: #F78812;
 }
 
-.delete-form{
-  display:flex;
-  justify-content:center;  
-}
-
-.img-delete{
+.image-delete {
   width: 200px;
-  height: 150px;  
+  height: 150px;
 }
 /*# sourceMappingURL=all.css.map */
