@@ -62,22 +62,28 @@ app.get("/register",(req,res)=>{
 
 app.post("/register",(req,res)=>{
         
-    const username = req.body.username;
-    const email = req.body.email;
-    const pwd = req.body.password;
-    let hashedPassword = bcrypt.hash(pwd,10);
-    
-    // console.log("password=" + pwd + ", username = " + username + ", email = "+ email);
+    let username = req.body.username;
+    let email = req.body.email;
+    let pwd = req.body.password;
 
-    const query="INSERT INTO customers (name,email,password) VALUES(username,email,hashedPassword)"    
+    bcrypt.hash(pwd,10,function(err,hash){
+        let hashedPassword;
+        if (err){
+            console.log(err);
+        }else{
+            hashedPassword = hash
+            console.log(hashedPassword);
+            let query="INSERT INTO customers (username,email,password) VALUES(?,?,?)";    
     
-    database.query(query,function(err,result){
-             if(err){
-                 console.log(err);
-             }else{
-                 console.log("multiple records inserted into the table :",result.affectedRows);
-             }
-        });    
+            database.query(query,[username,email,hashedPassword],function(err,result){
+                if(err){
+                    console.log(err);
+                }else{
+                    console.log("user"+ username + " is registered successfully.");
+                }
+            });    
+        }
+    });
 })
 
 app.get("/add",function(req,res){
