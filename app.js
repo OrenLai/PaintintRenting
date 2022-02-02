@@ -7,6 +7,29 @@ const uuid = require("uuid");
 const bcrypt = require("bcrypt");
 const database = require("./SqlConnection");
 const { query } = require("./SqlConnection");
+const { data } = require("jquery");
+const e = require("express");
+const passport = require("passport");
+const flash = require("express-flash")
+const session = require("express-session");
+
+function getUserByEmail(email){
+    
+    database.query("SELECT * from customers where email = ?",email,(err,result)=>{
+        if(err){
+            console.log(err);
+        }else{
+            let row = JSON.parse(JSON.stringify(result[0]));
+            console.log(row.username + " found by email");
+            return row;
+        }
+    })
+}
+
+const initializePassport = require("./passport-config")
+initializePassport(passport,getUserByEmail)
+
+
 
 const app = express();
 //allow us to access the req.body.username/password...etc
@@ -30,11 +53,20 @@ const upload = multer({storage});
 
 app.set("view engine","ejs");
 app.use(express.static("public"));
+app.use(flash());
+app.use(session({ 
+    secret: process.env.SESSION_SECRET,
+    resave:false,
+    saveUninitialized:false
+}))
+
+app.use(passport.initialize())
+app.use(passport.session())
 
 //Routes
 
 app.get("/",function(req,res){
-    database.query("SELECT * FROM paintings",function(err,result){
+    database.query("SELECT * FROM paintings",(err,result)=>{
     if(err) 
         console.log(err);
     else{
@@ -49,12 +81,43 @@ app.get("/",function(req,res){
 });
 
 app.get("/login",(req,res)=>{
-    res.render("login");
-});
+    res.render("login")
+})
 
-app.post("/login",(req,res)=>{
-    res.redirect("/");
-});
+app.post("/login", passport.authenticate("local",{
+    successRedirect:"/",
+    failureRedirect:"/login",
+    failureFlash:true
+}))
+
+
+// app.post("/login",(req,res)=>{
+
+//     let email = req.body.email
+//     let password = req.body.password
+//     let hash;
+//     // get the hashed password according to the email
+//     database.query("SELECT * FROM customers WHERE email = ?", [email] ,(err,result)=>{
+//         if(err){
+//             console.log(err);
+//         }else{
+//             let row = JSON.parse(JSON.stringify(result[0]));
+//             console.log(row.password);
+//             hash = row.password;
+//         }        
+//     })
+
+//     bcrypt.compare(password, hash, function(err, result) {
+//         if (result == true){
+//             console.log("match");
+//             res.redirect("/");
+//         }else{
+//             console.log("do not match");
+//             res.redirect("/login");
+//         }
+//     });
+
+// })
 
 app.get("/register",(req,res)=>{
     res.render("register");
@@ -62,28 +125,32 @@ app.get("/register",(req,res)=>{
 
 app.post("/register",(req,res)=>{
         
-    let username = req.body.username;
-    let email = req.body.email;
-    let pwd = req.body.password;
+    // check_query = "SELECT EXISTS(SELECT * from customers WHERE email='" + email +"')";
+    // //check_query = "SELECT * from customers where email='" + email + "'";
+    // database.query(check_query,(err,result)=>{
+    //     console.log(result);
+    // })
 
-    bcrypt.hash(pwd,10,function(err,hash){
-        let hashedPassword;
+    bcrypt.hash(req.body.password,10,function(err,hash){
+
         if (err){
             console.log(err);
         }else{
-            hashedPassword = hash
+            let hashedPassword = hash
             console.log(hashedPassword);
-            let query="INSERT INTO customers (username,email,password) VALUES(?,?,?)";    
-    
-            database.query(query,[username,email,hashedPassword],function(err,result){
+            let sql="INSERT INTO customers (username,email,password) VALUES(?,?,?)";    
+            val = [req.body.username, req.body.email,hashedPassword]
+            database.query(sql,val,function(err,result){
                 if(err){
                     console.log(err);
                 }else{
-                    console.log("user"+ username + " is registered successfully.");
+                    console.log("user "+ req.body.username + " is registered successfully.");
                 }
             });    
         }
     });
+
+    res.redirect("/")
 })
 
 app.get("/add",function(req,res){
