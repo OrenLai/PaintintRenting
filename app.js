@@ -26,8 +26,21 @@ function getUserByEmail(email){
     })
 }
 
+function getUserById(id){
+    
+    database.query("SELECT * from customers where id = ?",id,(err,result)=>{
+        if(err){
+            console.log(err);
+        }else{
+            let row = JSON.parse(JSON.stringify(result[0]));
+            console.log("User "+ row.username + " found by id");
+            return row;
+        }
+    })
+}
+
 const initializePassport = require("./passport-config")
-initializePassport(passport,getUserByEmail)
+initializePassport(passport,getUserByEmail,getUserById)
 
 
 
