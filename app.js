@@ -13,31 +13,60 @@ const passport = require("passport");
 const flash = require("express-flash")
 const session = require("express-session");
 
-function getUserByEmail(email){
+// user callback function cb to pass the information around , as MySQL uses callback
+// the variable in different layer of callback function has different scope, so use return would not get the expected value
+
+function getUserByEmail(email, cb){
     
     database.query("SELECT * from customers where email = ?",email,(err,result)=>{
         if(err){
             console.log(err);
-        }else{
-            let row = JSON.parse(JSON.stringify(result[0]));
-            console.log(row.username + " found by email");
-            return row;
+            cb(err, null)
+        } 
+
+        if (result.length == 0){
+            console.log("no user with this email "+ email);
+            cb("no user found with this email", null);
+        }else{            
+            let row = JSON.parse(JSON.stringify(result[0]));      
+            console.log("user found by email");  
+            cb(null, row);
         }
     })
 }
 
-function getUserById(id){
+function getUserById(id, cb){
     
     database.query("SELECT * from customers where id = ?",id,(err,result)=>{
         if(err){
             console.log(err);
+            cb(err, null)
+        }
+        if (result.length == 0){
+            console.log("no user with this id "+ id);
+            cb("no user found with this id", null)
         }else{
             let row = JSON.parse(JSON.stringify(result[0]));
             console.log("User "+ row.username + " found by id");
-            return row;
+            cb(null, row)
         }
     })
 }
+// function to check if user is authenticated , in not , redirect to login page
+function checkAuthenticated(req, res, next){
+    if(req.isAuthenticated()){
+        return next()
+    }
+    res.redirect("/login");
+}
+// function to check if user is already authenticated , if yes , not not let them assess certain pages like login and register and redirect them to root route
+function checkNotAuthenticated(req, res, next){
+    if(req.isAuthenticated()){
+       return res.redirect("/")
+    }
+    next()
+}
+
 
 const initializePassport = require("./passport-config")
 initializePassport(passport,getUserByEmail,getUserById)
@@ -78,14 +107,15 @@ app.use(passport.session())
 
 //Routes
 
-app.get("/",function(req,res){
+app.get("/",checkAuthenticated,function(req,res){
     database.query("SELECT * FROM paintings",(err,result)=>{
     if(err) 
         console.log(err);
     else{
         //console.log(result);
         res.render("home",{
-            paintings:result
+            paintings:result,
+            // name: req.user.name
             // loggedIn : true,
             // userid:0
         });
@@ -93,11 +123,11 @@ app.get("/",function(req,res){
     })
 });
 
-app.get("/login",(req,res)=>{
+app.get("/login", checkNotAuthenticated,(req,res)=>{
     res.render("login")
 })
 
-app.post("/login", passport.authenticate("local",{
+app.post("/login", checkNotAuthenticated, passport.authenticate("local",{
     successRedirect:"/",
     failureRedirect:"/login",
     failureFlash:true
@@ -132,11 +162,11 @@ app.post("/login", passport.authenticate("local",{
 
 // })
 
-app.get("/register",(req,res)=>{
+app.get("/register", checkNotAuthenticated,(req,res)=>{
     res.render("register");
 });
 
-app.post("/register",(req,res)=>{
+app.post("/register", checkNotAuthenticated, (req,res)=>{
         
     // check_query = "SELECT EXISTS(SELECT * from customers WHERE email='" + email +"')";
     // //check_query = "SELECT * from customers where email='" + email + "'";
