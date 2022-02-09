@@ -1,17 +1,15 @@
 const express = require("express");
 const ejs = require("ejs");
-const _ = require("lodash");
-const { result, values } = require("lodash");
 const multer = require("multer");
-const uuid = require("uuid");
 const bcrypt = require("bcrypt");
 const database = require("./SqlConnection");
-const { query } = require("./SqlConnection");
-const { data } = require("jquery");
-const e = require("express");
 const passport = require("passport");
 const flash = require("express-flash")
 const session = require("express-session");
+const methodOverride = require("method-override");
+
+
+/************************ Functions **************************/
 
 // user callback function cb to pass the information around , as MySQL uses callback
 // the variable in different layer of callback function has different scope, so use return would not get the expected value
@@ -71,8 +69,6 @@ function checkNotAuthenticated(req, res, next){
 const initializePassport = require("./passport-config")
 initializePassport(passport,getUserByEmail,getUserById)
 
-
-
 const app = express();
 //allow us to access the req.body.username/password...etc
 app.use(express.urlencoded({extended: false}));
@@ -104,17 +100,19 @@ app.use(session({
 
 app.use(passport.initialize())
 app.use(passport.session())
+app.use(methodOverride("_method")) 
 
-//Routes
+/************************ Routes **************************/
 
-app.get("/",checkAuthenticated,function(req,res){
+app.get("/",function(req,res){
     database.query("SELECT * FROM paintings",(err,result)=>{
     if(err) 
         console.log(err);
     else{
-        //console.log(result);
+        // console.log(req.user.is_admin);
         res.render("home",{
             paintings:result,
+            user:req.user
             // name: req.user.name
             // loggedIn : true,
             // userid:0
@@ -124,7 +122,9 @@ app.get("/",checkAuthenticated,function(req,res){
 });
 
 app.get("/login", checkNotAuthenticated,(req,res)=>{
-    res.render("login")
+    res.render("login",{
+        user:req.user
+    })
 })
 
 app.post("/login", checkNotAuthenticated, passport.authenticate("local",{
@@ -133,6 +133,10 @@ app.post("/login", checkNotAuthenticated, passport.authenticate("local",{
     failureFlash:true
 }))
 
+app.delete("/logout",(req,res)=>{
+    req.logOut();
+    res.redirect("/");
+})
 
 // app.post("/login",(req,res)=>{
 
@@ -163,7 +167,9 @@ app.post("/login", checkNotAuthenticated, passport.authenticate("local",{
 // })
 
 app.get("/register", checkNotAuthenticated,(req,res)=>{
-    res.render("register");
+    res.render("register",{
+        user:req.user
+    });
 });
 
 app.post("/register", checkNotAuthenticated, (req,res)=>{
@@ -193,7 +199,7 @@ app.post("/register", checkNotAuthenticated, (req,res)=>{
         }
     });
 
-    res.redirect("/")
+    res.redirect("/login")
 })
 
 app.get("/add",function(req,res){
@@ -204,7 +210,8 @@ app.get("/add",function(req,res){
         else{
             //console.log(result);
             res.render("add",{
-                paintings:result
+                paintings:result,
+                user:req.user
             });
         }         
         })
@@ -217,14 +224,17 @@ app.get("/delete",function(req,res){
     else{
         //console.log(result);
         res.render("delete",{
-            paintings:result
+            paintings:result,
+            user:req.user
         });
     }         
     })
 });
 
 app.get("/shoppingcart",function(req,res){
-    res.render("shoppingcart");
+    res.render("shoppingcart",{
+        user:req.user
+    });
 });
 
 app.post('/upload', upload.single('paintingImage'), function (req, res) {

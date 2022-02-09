@@ -23,11 +23,13 @@
                     <li class="nav-item">
                       <a class="nav-link active" aria-current="page" href="/">Home</a>
                     </li>
-                    <li class="nav-item">
-                      <a class="nav-link" href="/login">Login</a>
-                    </li>
+                    <%if (user == null){%>
+                      <li class="nav-item">
+                        <a class="nav-link" href="/login">Login</a>
+                      </li>
+                    <%}%>
                     <!-- only show management and delete page if the user is admin -->
-                    <% if (true){ %> 
+                    <% if ( user!= null && user.is_admin ){ %> 
                       <li class="nav-item">
                         <a class="nav-link" href="/add">Add</a>
                       </li>
@@ -39,6 +41,13 @@
                     <li class="nav-item">
                       <a class="nav-link" href="/shoppingcart">Shopping cart</a>
                     </li>
+                    <%if (user != null){%>
+                      <li class="nav-item">
+                        <form action="/logout?_method=DELETE" method="POST">
+                          <button type ="submit" class="btn btn-danger">LogOut</button>
+                        </form>
+                      </li>               
+                    <%}%>    
                   </ul>
                 </div>
               </div>
