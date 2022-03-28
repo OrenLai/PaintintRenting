@@ -65,6 +65,8 @@ function checkNotAuthenticated(req, res, next){
     next()
 }
 
+/************************ EventListeners **************************/
+
 
 const initializePassport = require("./passport-config")
 initializePassport(passport,getUserByEmail,getUserById)
@@ -137,34 +139,6 @@ app.delete("/logout",(req,res)=>{
     req.logOut();
     res.redirect("/");
 })
-
-// app.post("/login",(req,res)=>{
-
-//     let email = req.body.email
-//     let password = req.body.password
-//     let hash;
-//     // get the hashed password according to the email
-//     database.query("SELECT * FROM customers WHERE email = ?", [email] ,(err,result)=>{
-//         if(err){
-//             console.log(err);
-//         }else{
-//             let row = JSON.parse(JSON.stringify(result[0]));
-//             console.log(row.password);
-//             hash = row.password;
-//         }        
-//     })
-
-//     bcrypt.compare(password, hash, function(err, result) {
-//         if (result == true){
-//             console.log("match");
-//             res.redirect("/");
-//         }else{
-//             console.log("do not match");
-//             res.redirect("/login");
-//         }
-//     });
-
-// })
 
 app.get("/register", checkNotAuthenticated,(req,res)=>{
     res.render("register",{
